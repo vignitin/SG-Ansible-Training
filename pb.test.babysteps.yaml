@@ -1,0 +1,121 @@
+---
+- name: Get Device Facts
+  hosts: all
+  connection: local
+  gather_facts: no
+  roles:
+    - Juniper.junos
+  vars:
+    credential:
+      host: "{{ ansible_host }}"
+      port: "{{ netconf_port }}"
+      username: "{{ ansible_user }}"
+      password: "{{ ansible_ssh_pass }}"
+
+  tasks:
+## Example 1: Ansible default variables
+  - name: Display all variables/facts known for a host
+    debug:
+      var: hostvars[inventory_hostname]
+#      var: hostvars[inventory_hostname]['ansible_host']
+
+  - name: Display all group_names
+    debug:
+      var: group_names
+
+  - name: Display all variables/facts known for a group
+    debug:
+      var: groups['all']
+
+## Example 2: Check connectivity to routers and get facts
+  - name: Checking NETCONF connectivity
+    wait_for: host={{ ansible_host }} port={{ netconf_port }} timeout=5
+
+## Example 2a: Using Juniper galaxy module to collect facts
+  - name: Get JUNOS-style facts
+    junos_get_facts:
+      host: "{{ inventory_hostname }}"
+      user: automation
+      passwd: automation123
+## Example 2b: Get facts with Ansible core module (with debug msg & debug var)
+  - name: Get facts from devices running Junos
+    junos_facts:
+      provider: "{{ credential }}"
+    register: junos
+
+  #  - name: Show version
+  #    debug: var={{item}}
+  #    with_items: junos
+  #
+  #    debug:
+  #      var: junos.ansible_facts.ansible_net_version
+  #    debug: msg="Router {{ inventory_hostname }} is running {{ ansible_net_version }}"
+  #    debug: msg="Router {{ inventory_hostname }} is an {{ ansible_net_model }}"
+
+  # ## Example 3: Get router configuration in different formats
+  #   - name: Get the config in specified format (XML/JSON/Text/Set) (1/2)
+  #     junos_facts:
+  #       gather_subset: config
+  #       config_format: xml  #xml/json/text/set
+  #       provider: "{{ credential }}"
+  #     register: result
+  #
+  #   - name: Get the config in specified format (XML/JSON/Text/Set) (2/2)
+  #     debug: var=result.ansible_facts.ansible_net_config
+
+# ## Example 4: Run JUNOS commands on the router
+#
+# ## Example 4a: Show the logical interfaces
+#   - name: Show all logical interfaces (1/2)
+#     junos_command:
+#       display: json
+#       provider: "{{ credential }}"
+#       commands: "show interface terse ge-0/0/*"
+#     register: junos
+#
+#   - name: Show all logical interfaces (2/2)
+#     debug:
+# #      var: junos.stdout[0]['interface-information']['physical-interface']['logical-interface']
+#       var: junos.stdout[0]['interface-information'][0]['physical-interface'][0]['logical-interface']
+
+## Example 4b: Show details for ge-0/0/0 if oper-status is Up
+#   - name: Get info for ge-0/0/0 if oper-status is Up (1/2)
+#     junos_command:
+#       display: json
+#       provider: "{{ credential }}"
+#       commands: "show interface terse ge-0/0/*"
+#     register: junos
+#
+#   - name: Get info for ge-0/0/0 if oper-status is Up (2/2)
+#     debug: var=item
+# #    with_items: "{{junos.stdout[0]['interface-information']['physical-interface']}}"
+#     with_items: "{{junos.stdout[0]['interface-information'][0]['physical-interface'][0]['logical-interface']}}"
+#     when: (item['oper-status'] == 'up') and (item['name'] == 'ge-0/0/0')
+#
+### Example 4c: Show all interface names only
+  # - name: Show all interface names (1/2)
+  #   junos_command:
+  #     display: json
+  #     provider: "{{ credential }}"
+  #     commands: "show interface terse ge-0/0/*"
+  #   register: junos
+  #
+  # - name: Show all interface names (2/2)
+  #   debug: var=item
+  #   with_items: "{{junos.stdout[0]['interface-information'][0]['physical-interface'][0]['logical-interface'] | map(attribute='name') | list }}"
+  #
+
+# ### Example 4d: Show all interface names and their operational status (or only 'when' they are up & ge-0/0/0)
+#   - name: Show interface name & status (1/2)
+#     junos_command:
+#       display: json
+#       provider: "{{ credential }}"
+#       commands: "show interface terse ge-0/0/*"
+#     register: junos
+#
+#   - name: Show interface name & status (2/2)
+#     debug: msg="Interface {{ item.0.data }} Operational status is {{ item.1.data }}"
+#     with_together:
+#       - "{{junos.stdout[0]['interface-information'][0]['physical-interface'][0]['logical-interface'] | map(attribute='name') | list }}"
+#       - "{{junos.stdout[0]['interface-information'][0]['physical-interface'][0]['logical-interface'] | map(attribute='oper-status') | list }}"
+# #    when: (item.1.data == 'up') and (item.0.data == 'ge-0/0/0.0')

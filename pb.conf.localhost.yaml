@@ -1,0 +1,31 @@
+---
+- name: Update localhost's $HOME/.ssh/known_hosts & /etc/hosts
+  hosts: all
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: "Build /etc/hosts file"
+    remote_user: automation
+    become: yes
+    become_method: sudo
+    lineinfile:   dest=/etc/hosts
+                  regexp='.*{{ item }}$'
+                  line="{{ hostvars[item]['ansible_host'] }} {{item}}"
+                  state=present
+    when: hostvars[item]['ansible_host'] is defined
+    with_items: "{{groups['all']}}"
+
+  - name: Make sure the known hosts file exists
+    file: "path={{ ssh_known_hosts_file }} state=touch"
+
+  - name: Check host name availability
+    shell: "ssh-keygen -f {{ ssh_known_hosts_file }} -F {{ item }}"
+    with_items: "{{ansible_host}}"
+    register: ssh_known_host_results
+    ignore_errors: yes
+
+  - name: Scan the public key
+    shell: "{{ ssh_known_hosts_command}} {{inventory_hostname}},{{ item.item }} >> {{ ssh_known_hosts_file }}"
+    with_items: "{{ssh_known_host_results.results}}"
+    when: item.stdout == ""
