@@ -13,35 +13,35 @@
       password: "{{ ansible_ssh_pass }}"
 
   tasks:
-## Example 1: Ansible default variables
+# Example 1: Ansible default variables
   - name: Display all variables/facts known for a host
     debug:
       var: hostvars[inventory_hostname]
 #      var: hostvars[inventory_hostname]['ansible_host']
 
-  - name: Display all group_names
-    debug:
-      var: group_names
-
-  - name: Display all variables/facts known for a group
-    debug:
-      var: groups['all']
-
-## Example 2: Check connectivity to routers and get facts
-  - name: Checking NETCONF connectivity
-    wait_for: host={{ ansible_host }} port={{ netconf_port }} timeout=5
-
-## Example 2a: Using Juniper galaxy module to collect facts
-  - name: Get JUNOS-style facts
-    junos_get_facts:
-      host: "{{ inventory_hostname }}"
-      user: automation
-      passwd: automation123
-## Example 2b: Get facts with Ansible core module (with debug msg & debug var)
-  - name: Get facts from devices running Junos
-    junos_facts:
-      provider: "{{ credential }}"
-    register: junos
+#   - name: Display all group_names
+#     debug:
+#       var: group_names
+# #
+  # - name: Display all variables/facts known for a group
+  #   debug:
+  #     var: groups['all']
+  #
+# ## Example 2: Check connectivity to routers and get facts
+#   - name: Checking NETCONF connectivity
+#     wait_for: host={{ ansible_host }} port={{ netconf_port }} timeout=5
+#
+# ## Example 2a: Using Juniper galaxy module to collect facts
+#   - name: Get JUNOS-style facts
+#     junos_get_facts:
+#       host: "{{ inventory_hostname }}"
+#       user: automation
+#       passwd: automation123
+# ## Example 2b: Get facts with Ansible core module (with debug msg & debug var)
+#   - name: Get facts from devices running Junos
+#     junos_facts:
+#       provider: "{{ credential }}"
+#     register: junos
 
   #  - name: Show version
   #    debug: var={{item}}
