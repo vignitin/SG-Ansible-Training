@@ -14,9 +14,9 @@
 
   tasks:
 # Example 1: Ansible default variables
-  - name: Display all variables/facts known for a host
-    debug:
-      var: hostvars[inventory_hostname]
+  # - name: Display all variables/facts known for a host
+  #   debug:
+  #     var: hostvars[inventory_hostname]
 #      var: hostvars[inventory_hostname]['ansible_host']
 
 #   - name: Display all group_names
@@ -32,36 +32,37 @@
 #     wait_for: host={{ ansible_host }} port={{ netconf_port }} timeout=5
 #
 # ## Example 2a: Using Juniper galaxy module to collect facts
-#   - name: Get JUNOS-style facts
-#     junos_get_facts:
-#       host: "{{ inventory_hostname }}"
-#       user: automation
-#       passwd: automation123
-# ## Example 2b: Get facts with Ansible core module (with debug msg & debug var)
-#   - name: Get facts from devices running Junos
-#     junos_facts:
-#       provider: "{{ credential }}"
-#     register: junos
-
-  #  - name: Show version
-  #    debug: var={{item}}
-  #    with_items: junos
+  # - name: Get JUNOS-style facts
+  #   junos_get_facts:
+  #     host: "{{ inventory_hostname }}"
+  #     user: automation
+  #     passwd: automation123
+## Example 2b: Get facts with Ansible core module (with debug msg & debug var)
+  # - name: Get facts from devices running Junos
+  #   junos_facts:
+  #     provider: "{{ credential }}"
+  #   register: junos
   #
-  #    debug:
-  #      var: junos.ansible_facts.ansible_net_version
-  #    debug: msg="Router {{ inventory_hostname }} is running {{ ansible_net_version }}"
-  #    debug: msg="Router {{ inventory_hostname }} is an {{ ansible_net_model }}"
-
+  # - name: Show version
+  #   # debug: var={{item}}
+  #   # with_items: junos
+  #
+  #   # debug:
+  #   #   var: junos.ansible_facts.ansible_net_version
+  #   debug: msg="Router {{ inventory_hostname }} is running {{ ansible_net_version }}"
+    # debug:
+    #   msg="Router {{ inventory_hostname }} is an {{ ansible_net_model }}"
+    #   msg="Router {{ inventory_hostname }} is running {{ ansible_net_version }}"
   # ## Example 3: Get router configuration in different formats
-  #   - name: Get the config in specified format (XML/JSON/Text/Set) (1/2)
-  #     junos_facts:
-  #       gather_subset: config
-  #       config_format: xml  #xml/json/text/set
-  #       provider: "{{ credential }}"
-  #     register: result
-  #
-  #   - name: Get the config in specified format (XML/JSON/Text/Set) (2/2)
-  #     debug: var=result.ansible_facts.ansible_net_config
+    - name: Get the config in specified format (XML/JSON/Text/Set) (1/2)
+      junos_facts:
+        gather_subset: config
+        config_format: json  #xml/json/text/set
+        provider: "{{ credential }}"
+      register: result
+
+    - name: Get the config in specified format (XML/JSON/Text/Set) (2/2)
+      debug: var=result.ansible_facts.ansible_net_config
 
 # ## Example 4: Run JUNOS commands on the router
 #
